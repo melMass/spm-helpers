@@ -1,0 +1,199 @@
+#!/bin/bash
+
+#UI
+
+##
+# Set Colors
+#
+
+bold=$(tput bold)
+underline=$(tput sgr 0 1)
+reset=$(tput sgr0)
+
+purple=$(tput setaf 171)
+red=$(tput setaf 1)
+green=$(tput setaf 76)
+tan=$(tput setaf 3)
+blue=$(tput setaf 38)
+
+#
+# Headers and  Logging
+#
+
+e_header() { printf "\n${bold}${purple}====================  %s  ====================${reset}\n" "$@"
+}
+e_arrow() { printf "➜ $@\n"
+}
+e_success() { printf "${green}✔ %s${reset}\n" "$@"
+}
+e_error() { printf "${red}✖ %s${reset}\n" "$@"
+}
+e_warning() { printf "${tan}➜ %s${reset}\n" "$@"
+}
+e_underline() { printf "${underline}${bold}%s${reset}\n" "$@"
+}
+e_bold() { printf "${bold}%s${reset}\n" "$@"
+}
+e_note() { printf "${underline}${bold}${blue}Note:${reset}  ${blue}%s${reset}\n" "$@"
+}
+e_blue(){ printf "${blue}%s${reset}\n" "$@"
+}
+e_red(){ printf "${red}%s${reset}\n" "$@"
+}
+e_jaune(){ printf "${tan}%s${reset}\n" "$@"
+}
+e_green(){ printf "${green}%s${reset}\n" "$@"
+}
+
+## ATTRIBUTE ()
+
+
+## FOREGROUND COLORS (30m)
+	# 30m black
+	# 31m red"
+	# 32m green"
+	# 33m yellow"
+	# 34m blue"
+	# 35m mag"
+	# 36m cyan"
+	# 37m white"   
+
+## BACKGROUND COLORS (40m)
+	# 40m black
+	# 41m red"
+	# 42m green"
+	# 43m yellow"
+	# 44m blue"
+	# 45m mag"
+	# 46m cyan"
+	# 47m white" 
+
+SPM_NAME="`basename $0`"
+SPM_COMMAND="$1"
+SPM_PROJECT="$2"
+
+echo
+
+buildProject(){
+
+	if [ -e Package.swift ];then
+
+		echo
+		e_note "Building Dependencies"
+		swift build
+		#e_success "Dependencies built"
+		
+	
+	else
+		printf "${red}No ${bold}Package.swift${reset}${red} found are you in the right folder ?${reset}\n" "$@"
+		echo -e "\x1b[30;44m black with blue background \x1b[m"
+	fi
+
+}
+
+
+
+openPackage(){
+
+	echo
+	printf ${blue}
+	read -p "Do you want to edit Package.swift now ?" -n 1 -r
+	echo   
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then
+    	sublime --wait Package.swift
+    	read -p "Do you want to Build now ? " -n 1 -r
+    	if [[ $REPLY =~ ^[Yy]$ ]]
+			then
+			buildProject
+			read -p "Do you want to create an XCode Project ?" -n 1 -r
+			echo   
+			if [[ $REPLY =~ ^[Yy]$ ]]
+		then
+			makeProject
+		fi
+
+    		printf ${reset}
+		else
+			echo
+		fi
+	fi
+}
+
+showHelp(){
+	echo
+	e_header "$SPM_NAME usage:" 
+	e_warning "spm init [name] ----> Initialise a new project, opens the package in Sublime."
+	e_warning "spm (x|generate)----------> Generate XCode Project"
+	e_warning "spm build ----------------> Build Dependencies"
+	e_warning "spm help -----------------> Display this"
+	echo
+}
+
+makeProject(){
+
+	if [ -e Package.swift ];then
+
+		e_note "Building XCode Project"
+		swift package generate-xcodeproj
+
+		printf ${blue}
+		read -p "Do you want to open the XCode project now ?" -n 1 -r
+		echo   
+		if [[ $REPLY =~ ^[Yy]$ ]]
+		then
+		open $SPM_PROJECT.xcodeproj
+		printf ${reset}
+	fi
+		
+	
+	else
+		e_error "No Package.swift found are you in the right folder ?"
+		showHelp
+	fi
+
+}
+
+
+initIt(){
+	if [ $# -gt 0 ] && [ $# -lt 2 ]; then
+
+		if [[ -d $1 ]]; then
+			e_error "Project already exists"
+			e_note "Use the following command to delete the project" 
+			e_jaune "rm -rf $1"
+		
+  	else
+  		e_note "Building the project $1"
+  		mkdir $1
+  		cd $1
+  		swift package init
+  		e_success "Project $1 built"
+  		openPackage
+  	fi
+  else
+  	e_error "No project name provided or Illegal project name"
+  	showHelp
+  fi
+
+}
+
+
+if [ $# -gt 0 ]; then
+
+	
+shift
+
+case "$SPM_COMMAND" in
+	init)			initIt $1;;
+	x | generate)	makeProject;;
+	help)			showHelp;;
+	build)			buildProject;;
+esac
+
+
+
+else
+	e_error "Your command line contains no arguments"
+
+fi
