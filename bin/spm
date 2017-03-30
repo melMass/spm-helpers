@@ -1,49 +1,44 @@
-#!/bin/bash
-
+#!/usr/local/bin/zsh
+#************************************************#
+#                   spm.sh                       #
+#          written by Mel Massadian              #
+#                 Mar 29, 2017                   #
+#                                                #
+#     Simple wrapper arround the swift SPM       #
+#************************************************#
 #UI
 
+source ~/.zsh/init/UI_Rainbow.sh
 ##
 # Set Colors
 #
 
-bold=$(tput bold)
-underline=$(tput sgr 0 1)
-reset=$(tput sgr0)
+#bold=$(tput bold)
+#underline=$(tput sgr 0 1)
+#reset=$(tput sgr0)
 
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
+#purple=$(tput setaf 171)
+#red=$(tput setaf 1)
+#green=$(tput setaf 76)
+#tan=$(tput setaf 3)
+#blue=$(tput setaf 38)
 
 #
 # Headers and  Logging
 #
 
-e_header() { printf "\n${bold}${purple}====================  %s  ====================${reset}\n" "$@"
-}
-e_arrow() { printf "➜ $@\n"
-}
-e_success() { printf "${green}✔ %s${reset}\n" "$@"
-}
-e_error() { printf "${red}✖ %s${reset}\n" "$@"
-}
-e_warning() { printf "${tan}➜ %s${reset}\n" "$@"
-}
-e_underline() { printf "${underline}${bold}%s${reset}\n" "$@"
-}
-e_bold() { printf "${bold}%s${reset}\n" "$@"
-}
-e_note() { printf "${underline}${bold}${blue}Note:${reset}  ${blue}%s${reset}\n" "$@"
-}
-e_blue(){ printf "${blue}%s${reset}\n" "$@"
-}
-e_red(){ printf "${red}%s${reset}\n" "$@"
-}
-e_jaune(){ printf "${tan}%s${reset}\n" "$@"
-}
-e_green(){ printf "${green}%s${reset}\n" "$@"
-}
+# e_header() { printf "\n${bold}${purple}====================  %s  ====================${reset}\n" "$@"}
+# e_arrow() { printf "➜ $@\n"}
+# e_success() { printf "${green}✔ %s${reset}\n" "$@"}
+# e_error() { printf "${red}✖ %s${reset}\n" "$@"}
+# e_warning() { printf "${tan}➜ %s${reset}\n" "$@"}
+# e_underline() { printf "${underline}${bold}%s${reset}\n" "$@"}
+# e_bold() { printf "${bold}%s${reset}\n" "$@"}
+# e_note() { printf "${underline}${bold}${blue}Note:${reset}  ${blue}%s${reset}\n" "$@"}
+# e_blue(){ printf "${blue}%s${reset}\n" "$@"}
+# e_red(){ printf "${red}%s${reset}\n" "$@"}
+# e_jaune(){ printf "${tan}%s${reset}\n" "$@"}
+# e_green(){ printf "${green}%s${reset}\n" "$@"}
 
 ## ATTRIBUTE ()
 
@@ -85,48 +80,81 @@ buildProject(){
 		
 	
 	else
-		printf "${red}No ${bold}Package.swift${reset}${red} found are you in the right folder ?${reset}\n" "$@"
-		echo -e "\x1b[30;44m black with blue background \x1b[m"
+		errString="Missing $(red "Package.swift"). Are you in the right folder ?"
+		echo errString
 	fi
 
 }
 
+openInSublime(){
+	if [ -e Package.swift ];then
+		sublime .
+		sublime Package.swift
+	elif [ $# -gt 0 ];then
+		if [ -e $1/Package.swift ];then
+			e_success "Found project $1"
+		else
+			e_error "Wrong Project specified"
+		fi
+	else
+		e_error "No Project found"
+		
 
+fi
+
+}
 
 openPackage(){
 
 	echo
-	printf ${blue}
-	read -p "Do you want to edit Package.swift now ?" -n 1 -r
+	message=$(blue "Do you want to edit Package.swift now ?")
+	read "?$message"
 	echo   
 	if [[ $REPLY =~ ^[Yy]$ ]]
-	then
+	   then
+		  toClip=",
+    dependencies:[
+    		
+    ]"
+		echo $toClip | pbcopy
     	sublime --wait Package.swift
-    	read -p "Do you want to Build now ? " -n 1 -r
+    fi
+    	message=$(blue "Do you want to Build now ?")
+    	
+        read "?$message"
     	if [[ $REPLY =~ ^[Yy]$ ]]
 			then
 			buildProject
-			read -p "Do you want to create an XCode Project ?" -n 1 -r
+			message=$(blue "Do you want to create an XCode Project ?")
+			fi
+            read "?$message"
 			echo   
 			if [[ $REPLY =~ ^[Yy]$ ]]
-		then
-			makeProject
-		fi
+		          then
+			     makeProject
+		
+            fi
+			message=$(blue "Do you want to open the project in Sublime ?")
+			read "?$message"
+			echo   
+			     if [[ $REPLY =~ ^[Yy]$ ]]
+                    then
+				        openInSublime
+                fi
+		
 
-    		printf ${reset}
-		else
-			echo
-		fi
-	fi
+
+	
 }
 
 showHelp(){
 	echo
 	e_header "$SPM_NAME usage:" 
-	e_warning "spm init [name] ----> Initialise a new project, opens the package in Sublime."
+	e_warning "spm init [name] ----------> Initialise a new project with prompts"
 	e_warning "spm (x|generate)----------> Generate XCode Project"
 	e_warning "spm build ----------------> Build Dependencies"
 	e_warning "spm help -----------------> Display this"
+	e_warning "spm sublime --------------> Opens the project in Sublime Text"
 	echo
 }
 
@@ -138,7 +166,8 @@ makeProject(){
 		swift package generate-xcodeproj
 
 		printf ${blue}
-		read -p "Do you want to open the XCode project now ?" -n 1 -r
+		message=$(blue "Do you want to open the XCode project now ?")
+		read "?$message"
 		echo   
 		if [[ $REPLY =~ ^[Yy]$ ]]
 		then
@@ -161,7 +190,7 @@ initIt(){
 		if [[ -d $1 ]]; then
 			e_error "Project already exists"
 			e_note "Use the following command to delete the project" 
-			e_jaune "rm -rf $1"
+			echo $(yellow "rm -rf $1")
 		
   	else
   		e_note "Building the project $1"
@@ -189,11 +218,13 @@ case "$SPM_COMMAND" in
 	x | generate)	makeProject;;
 	help)			showHelp;;
 	build)			buildProject;;
+	sublime)		openInSublime $1;;				
 esac
 
 
 
 else
 	e_error "Your command line contains no arguments"
+	showHelp
 
 fi
