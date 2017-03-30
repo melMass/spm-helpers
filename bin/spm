@@ -6,62 +6,8 @@
 #                                                #
 #     Simple wrapper arround the swift SPM       #
 #************************************************#
-#UI
 
 source ~/.zsh/init/UI_Rainbow.sh
-##
-# Set Colors
-#
-
-#bold=$(tput bold)
-#underline=$(tput sgr 0 1)
-#reset=$(tput sgr0)
-
-#purple=$(tput setaf 171)
-#red=$(tput setaf 1)
-#green=$(tput setaf 76)
-#tan=$(tput setaf 3)
-#blue=$(tput setaf 38)
-
-#
-# Headers and  Logging
-#
-
-# e_header() { printf "\n${bold}${purple}====================  %s  ====================${reset}\n" "$@"}
-# e_arrow() { printf "➜ $@\n"}
-# e_success() { printf "${green}✔ %s${reset}\n" "$@"}
-# e_error() { printf "${red}✖ %s${reset}\n" "$@"}
-# e_warning() { printf "${tan}➜ %s${reset}\n" "$@"}
-# e_underline() { printf "${underline}${bold}%s${reset}\n" "$@"}
-# e_bold() { printf "${bold}%s${reset}\n" "$@"}
-# e_note() { printf "${underline}${bold}${blue}Note:${reset}  ${blue}%s${reset}\n" "$@"}
-# e_blue(){ printf "${blue}%s${reset}\n" "$@"}
-# e_red(){ printf "${red}%s${reset}\n" "$@"}
-# e_jaune(){ printf "${tan}%s${reset}\n" "$@"}
-# e_green(){ printf "${green}%s${reset}\n" "$@"}
-
-## ATTRIBUTE ()
-
-
-## FOREGROUND COLORS (30m)
-	# 30m black
-	# 31m red"
-	# 32m green"
-	# 33m yellow"
-	# 34m blue"
-	# 35m mag"
-	# 36m cyan"
-	# 37m white"   
-
-## BACKGROUND COLORS (40m)
-	# 40m black
-	# 41m red"
-	# 42m green"
-	# 43m yellow"
-	# 44m blue"
-	# 45m mag"
-	# 46m cyan"
-	# 47m white" 
 
 SPM_NAME="`basename $0`"
 SPM_COMMAND="$1"
@@ -70,15 +16,14 @@ SPM_PROJECT="$2"
 echo
 
 buildProject(){
+# TODO: Add error checking ?
 
 	if [ -e Package.swift ];then
 
 		echo
 		e_note "Building Dependencies"
 		swift build
-		#e_success "Dependencies built"
-		
-	
+
 	else
 		errString="Missing $(red "Package.swift"). Are you in the right folder ?"
 		echo errString
@@ -87,36 +32,48 @@ buildProject(){
 }
 
 openInSublime(){
-	if [ -e Package.swift ];then
-		sublime .
+	
+    if [ -e Package.swift ];then
+	
+    	sublime .
 		sublime Package.swift
-	elif [ $# -gt 0 ];then
-		if [ -e $1/Package.swift ];then
+	
+    elif [ $# -gt 0 ];then
+	
+    	if [ -e $1/Package.swift ];then
 			e_success "Found project $1"
-		else
-			e_error "Wrong Project specified"
-		fi
-	else
-		e_error "No Project found"
-		
-
-fi
+	
+    	else
+	
+    		e_error "Wrong Project specified"
+	
+    	fi
+	
+    else
+	   
+    	e_error "No Project found"
+    fi
 
 }
 
 openPackage(){
 
+    # TODO: Think of a cleaner way than copying to the clipboard...
+    
 	echo
 	message=$(blue "Do you want to edit Package.swift now ?")
 	read "?$message"
 	echo   
-	if [[ $REPLY =~ ^[Yy]$ ]]
-	   then
+	
+    if [[ $REPLY =~ ^[Yy]$ ]]
+	
+       then
 		  toClip=",
     dependencies:[
     		
     ]"
-		echo $toClip | pbcopy
+	
+    	echo $toClip | pbcopy
     	sublime --wait Package.swift
     fi
     	message=$(blue "Do you want to Build now ?")
