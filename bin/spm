@@ -7,13 +7,16 @@
 #     Simple wrapper arround the swift SPM       #
 #************************************************#
 
-source ~/.zsh/init/UI_Rainbow.sh
+
 
 SPM_NAME="`basename $0`"
 SPM_COMMAND="$1"
 SPM_PROJECT="$2"
 
-echo
+SPM_FOLDER="`dirname $0`"
+SPM_FOLDER="`dirname $SPM_FOLDER`/init/UI_Rainbow.sh"
+
+source $SPM_FOLDER
 
 buildProject(){
 # TODO: Add error checking ?
