@@ -7,6 +7,7 @@
 #     Simple wrapper arround the swift SPM       #
 #************************************************#
 
+#using https://perfect.org/en/assistant/ now
 
 
 SPM_NAME="`basename $0`"
